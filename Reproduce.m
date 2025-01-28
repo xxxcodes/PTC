@@ -1,6 +1,5 @@
 % For Peer-review
-% Reproducing the reulsts of Prototype Theory Classifier paper submitted to
-% ICML 2025
+% Reproducing the reulsts of Prototype Theory Classifier paper
 
 
 if ~isfolder('datasets')
