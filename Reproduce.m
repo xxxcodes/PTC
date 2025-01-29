@@ -356,7 +356,7 @@ for n=1:height(datasets)
     col{n,7}=NCC_numFeatures;
 
 end
-PTC_Models = cell2table(col,'VariableNames',{'Prototype Sample IDs','Core Feature IDs','Test Accuracy','LASSO Test Accuracy','NumFeaturesPTC','NumFeaturesLASSO','NumFeatursTotal'});
+PTC_Models = cell2table(col,'VariableNames',{'PrototypeSampleIDs','CoreFeatureIDs','TestAccuracy','LASSOTestAccuracy','NumFeaturesPTC','NumFeaturesLASSO','NumFeatursTotal'});
 writetable(PTC_Models,'PTC_Models.xlsx')
 
 
@@ -430,11 +430,21 @@ y_pred_test_3 = y_pred_test_prob_3 > 0.5;
 AccTest_LASSO_3 = mean(y_pred_test_3 == y_test);
 
 % NCC
-Mdl=fitNCC(X_train,y_train);
-y_pred_test_NCC = predNCC(Mdl, X_test);
+NCC_Mdl=fitNCC(X_train,y_train);
+y_pred_test_NCC = predNCC(NCC_Mdl, X_test);
 AccTest_NCC=mean(y_test==y_pred_test_NCC);
+NCCCentroids=NCC_Mdl.centroids
 
 %SNCC
-[theta_plus, theta_minus] = fitSNCC(X_train', y_train, 3);
+for R=1:size(X_train,2)
+    [theta_plus, theta_minus] = fitSNCC(X_train', y_train, R);
+    center_sparse=abs(theta_plus-theta_minus)';
+    num_features(R)=sum(center_sparse~=0);
+end
+desired_Rs=find(num_features<=PTCnumFeatures & num_features>=1);
+desired_R=desired_Rs(1);
+[theta_plus, theta_minus] = fitSNCC(X_train', y_train, desired_R);
+center_sparse=abs(theta_plus-theta_minus)';
+CenterSparseFeatures=find(center_sparse~=0);
 y_pred_test_SNCC = predSNCC(X_test', theta_plus, theta_minus,2);
 AccTest_SNCC = mean(y_test == y_pred_test_SNCC);
